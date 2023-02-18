@@ -1,6 +1,2 @@
-./dataset/32k/nen/kne110_005.wav
-./dataset/32k/yunhao/001827.wav
-./dataset/32k/jishuang/000104.wav
-./dataset/32k/jishuang/000223.wav
-./dataset/32k/nen/kne110_004.wav
-./dataset/32k/yunhao/001828.wav
+F:\1 New Home\Archive 8\neo-so-vits\dataset_raw\32/gfl_kalina/kanban_musume_042.wav
+F:\1 New Home\Archive 8\neo-so-vits\dataset_raw\32/gfl_kalina/kanban_musume_001.wav
