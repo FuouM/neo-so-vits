@@ -105,6 +105,7 @@ def run(rank, n_gpus, hps):
     scaler = GradScaler(enabled=hps.train.fp16_run)
 
     for epoch in range(epoch_str, hps.train.epochs + 1):
+        start_time = time.time()
         if rank == 0:
             train_and_evaluate(rank, epoch, hps, [net_g, net_d], [optim_g, optim_d], [scheduler_g, scheduler_d], scaler,
                                [train_loader, eval_loader], logger, [writer, writer_eval])
@@ -113,6 +114,7 @@ def run(rank, n_gpus, hps):
                                [train_loader, None], None, None)
         scheduler_g.step()
         scheduler_d.step()
+        print(f"Epoch time: {time.time() - start_time}")
 
 
 def train_and_evaluate(rank, epoch, hps, nets, optims, schedulers, scaler, loaders, logger, writers):
@@ -129,7 +131,7 @@ def train_and_evaluate(rank, epoch, hps, nets, optims, schedulers, scaler, loade
     net_g.train()
     net_d.train()
     for batch_idx, items in enumerate(train_loader):
-        start_time = time.time()
+        
         c, f0, spec, y, spk = items
         g = spk.cuda(rank, non_blocking=True)
         spec, y = spec.cuda(rank, non_blocking=True), y.cuda(rank, non_blocking=True)
@@ -228,7 +230,7 @@ def train_and_evaluate(rank, epoch, hps, nets, optims, schedulers, scaler, loade
 
     if rank == 0:
         logger.info('====> Epoch: {}'.format(epoch))
-        print(f"Epoch time: {time.time() - start_time}")
+        
 
 
 def evaluate(hps, generator, eval_loader, writer_eval):
