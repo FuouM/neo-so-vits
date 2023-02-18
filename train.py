@@ -106,6 +106,7 @@ def run(rank, n_gpus, hps):
 
     for epoch in range(epoch_str, hps.train.epochs + 1):
         start_time = time.time()
+        print(global_step)
         if rank == 0:
             train_and_evaluate(rank, epoch, hps, [net_g, net_d], [optim_g, optim_d], [scheduler_g, scheduler_d], scaler,
                                [train_loader, eval_loader], logger, [writer, writer_eval])
