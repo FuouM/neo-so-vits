@@ -5,11 +5,13 @@ from torch import nn
 from torch.nn import functional as F
 
 def slice_pitch_segments(x, ids_str, segment_size=4):
-  ret = torch.zeros_like(x[:, :segment_size])
-  for i in range(x.size(0)):
-    idx_str = ids_str[i]
-    idx_end = idx_str + segment_size
-    ret[i] = x[i, idx_str:idx_end]
+  # Initialize output tensor with zeros
+  ret = torch.zeros(x.size(0), segment_size, device=x.device, dtype=x.dtype)
+  
+  # Iterate over examples
+  for i, (idx_str, _) in enumerate(ids_str):
+    # Extract segment from input tensor and add it to output tensor
+    ret[i] = x[i, idx_str:idx_str+segment_size]
   return ret
 
 def rand_slice_segments_with_pitch(x, pitch, x_lengths=None, segment_size=4):
@@ -18,6 +20,7 @@ def rand_slice_segments_with_pitch(x, pitch, x_lengths=None, segment_size=4):
     x_lengths = t
   ids_str_max = x_lengths - segment_size + 1
   ids_str = (torch.rand([b]).to(device=x.device) * ids_str_max).to(dtype=torch.long)
+  # Slice segments from input tensor and pitch tensor
   ret = slice_segments(x, ids_str, segment_size)
   ret_pitch = slice_pitch_segments(pitch, ids_str, segment_size)
   return ret, ret_pitch, ids_str

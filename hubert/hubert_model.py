@@ -10,23 +10,41 @@ from torch.nn.modules.utils import consume_prefix_in_state_dict_if_present
 
 class Hubert(nn.Module):
     def __init__(self, num_label_embeddings: int = 100, mask: bool = True):
-        super().__init__()
-        self._mask = mask
+        super().__init__()        
+        # Feature extractor to extract the features from the input signal
         self.feature_extractor = FeatureExtractor()
+        
+        # Feature projection to project the features onto a lower-dimensional space
         self.feature_projection = FeatureProjection()
+        
+        # Positional convolutional embedding to add positional information to the features
         self.positional_embedding = PositionalConvEmbedding()
+        
+        # Layer normalization to normalize the features
         self.norm = nn.LayerNorm(768)
+        
+        # Dropout layer to regularize the network
         self.dropout = nn.Dropout(0.1)
+        
+        # Transformer encoder to encode the features
         self.encoder = TransformerEncoder(
             nn.TransformerEncoderLayer(
                 768, 12, 3072, activation="gelu", batch_first=True
             ),
             12,
         )
+        
+        # Projection layer to project the encoded features onto a lower-dimensional space
         self.proj = nn.Linear(768, 256)
 
+        # Parameter for masked spectrogram embedding
         self.masked_spec_embed = nn.Parameter(torch.FloatTensor(768).uniform_())
+        
+        # Embedding layer for label embeddings
         self.label_embedding = nn.Embedding(num_label_embeddings, 256)
+        
+        # Flag to indicate whether to apply masking during training
+        self._mask = mask
 
     def mask(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         mask = None
@@ -38,25 +56,45 @@ class Hubert(nn.Module):
     def encode(
             self, x: torch.Tensor, layer: Optional[int] = None
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+        
+        # Extract features from the input signal
         x = self.feature_extractor(x)
+        
+        # Project the features onto a lower-dimensional space
         x = self.feature_projection(x.transpose(1, 2))
+        
+        # Apply masking
         x, mask = self.mask(x)
+        
+        # Add positional information to the features
         x = x + self.positional_embedding(x)
+        
+        # Apply layer normalization
         x = self.dropout(self.norm(x))
+        
+        # Encode the features using the transformer encoder
         x = self.encoder(x, output_layer=layer)
         return x, mask
 
     def logits(self, x: torch.Tensor) -> torch.Tensor:
+        # Compute cosine similarity between the encoded features and the label embeddings
         logits = torch.cosine_similarity(
             x.unsqueeze(2),
             self.label_embedding.weight.unsqueeze(0).unsqueeze(0),
             dim=-1,
         )
+        
+        # Normalize the logits
         return logits / 0.1
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        # Encode the input signal
         x, mask = self.encode(x)
+        
+        # Project the encoded features onto a lower-dimensional space
         x = self.proj(x)
+        
+        # Compute the logits
         logits = self.logits(x)
         return logits, mask
 
@@ -67,7 +105,19 @@ class HubertSoft(Hubert):
 
     @torch.inference_mode()
     def units(self, wav: torch.Tensor) -> torch.Tensor:
+        """
+        Performs inference on the HubertSoft model given an input waveform tensor.
+
+        Args:
+            wav (torch.Tensor): The input waveform tensor.
+
+        Returns:
+            torch.Tensor: The output of the model.
+        """
+        # Pad the input waveform tensor to ensure it has the expected shape
         wav = t_func.pad(wav, ((400 - 320) // 2, (400 - 320) // 2))
+        
+        # Encode the waveform tensor and pass it through a linear layer
         x, _ = self.encode(wav)
         return self.proj(x)
 
