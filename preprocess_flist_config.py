@@ -73,6 +73,7 @@ if __name__ == "__main__":
     parser.add_argument("--val_list", type=str, default="./filelists/val.txt", help="path to val list")
     parser.add_argument("--test_list", type=str, default="./filelists/test.txt", help="path to test list")
     parser.add_argument("--source_dir", type=str, default="./dataset/32k", help="path to source dir")
+    parser.add_argument("--eval_interval", type=int, default=1000, help="eval interval=1000")
     args = parser.parse_args()
     
     train = []
@@ -87,9 +88,9 @@ if __name__ == "__main__":
         wavs = ["/".join([args.source_dir, speaker, i]) for i in os.listdir(os.path.join(args.source_dir, speaker))]
         for wavpath in wavs:
             if not pattern.match(wavpath):
-                print(f"warning：文件名{wavpath}中包含非字母数字下划线，可能会导致错误。（也可能不会）")
+                print(f"Warning: The file name {wavpath} contains non-alphanumeric characters and underscores, which may cause errors. (Or it may not.)")
         if len(wavs) < 10:
-            print(f"warning：{speaker}数据集数量小于10条，请补充数据")
+            print(f"Warning: The number of samples in the {speaker} dataset is less than 10. Please add more data.")
         wavs = [i for i in wavs if i.endswith("wav")]
         shuffle(wavs)
         train += wavs[2:-2]
@@ -120,6 +121,7 @@ if __name__ == "__main__":
 
     config_template["model"]["n_speakers"] = n_speakers
     config_template["spk"] = spk_dict
+    config_template["train"]["eval_interval"] = args.eval_interval
     print("Writing configs/config.json")
     with open("configs/config.json", "w") as f:
         json.dump(config_template, f, indent=2)

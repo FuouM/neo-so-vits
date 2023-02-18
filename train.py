@@ -5,6 +5,7 @@ import json
 import argparse
 import itertools
 import math
+import time
 import torch
 from torch import nn, optim
 from torch.nn import functional as F
@@ -128,6 +129,7 @@ def train_and_evaluate(rank, epoch, hps, nets, optims, schedulers, scaler, loade
     net_g.train()
     net_d.train()
     for batch_idx, items in enumerate(train_loader):
+        start_time = time.time()
         c, f0, spec, y, spk = items
         g = spk.cuda(rank, non_blocking=True)
         spec, y = spec.cuda(rank, non_blocking=True), y.cuda(rank, non_blocking=True)
@@ -226,6 +228,7 @@ def train_and_evaluate(rank, epoch, hps, nets, optims, schedulers, scaler, loade
 
     if rank == 0:
         logger.info('====> Epoch: {}'.format(epoch))
+        print(f"Epoch time: {time.time() - start_time}")
 
 
 def evaluate(hps, generator, eval_loader, writer_eval):
