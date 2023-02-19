@@ -2,6 +2,8 @@
 ## English docs
 [Check here](Eng_docs.md)
 
+[New Colab Version](https://colab.research.google.com/drive/1vtZmJRBLfb_eYmplmUuR_MhGlTJz20fL)
+
 ```
 conda create -n neosovit python=3.10
 conda activate neosovit
