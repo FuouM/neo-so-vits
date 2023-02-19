@@ -243,6 +243,8 @@ def get_hparams(init=True):
                       help='JSON file for configuration')
   parser.add_argument('-m', '--model', type=str, required=True,
                       help='Model name')
+  parser.add_argument("--batch", dest="batch_size", help="Batch size (Default = 12)", default=12, type=int)
+  parser.add_argument("--workers", dest="num_workers", help="Num of workers (Default = 8)", default=8, type=int)
 
   args = parser.parse_args()
   model_dir = os.path.join("./logs", args.model)
@@ -264,7 +266,13 @@ def get_hparams(init=True):
 
   hparams = HParams(**config)
   hparams.model_dir = model_dir
-  return hparams
+  
+  extra = {
+    "batch_size" : args.batch_size,
+    "num_workers": args.num_workers
+  }
+  
+  return hparams, extra
 
 
 def get_hparams_from_dir(model_dir):

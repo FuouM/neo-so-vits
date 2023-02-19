@@ -39,16 +39,15 @@ global_step = 0
 def main():
     """Assume Single Node Multi GPUs Training Only"""
     assert torch.cuda.is_available(), "CPU training is not allowed."
-    hps = utils.get_hparams()
-
+    hps, extra = utils.get_hparams()
     n_gpus = torch.cuda.device_count()
     os.environ['MASTER_ADDR'] = 'localhost'
     os.environ['MASTER_PORT'] = hps.train.port
 
-    mp.spawn(run, nprocs=n_gpus, args=(n_gpus, hps,))
+    mp.spawn(run, nprocs=n_gpus, args=(n_gpus, hps, extra))
 
 
-def run(rank, n_gpus, hps):
+def run(rank, n_gpus, hps, extra):
     global global_step
     if rank == 0:
         logger = utils.get_logger(hps.model_dir)
@@ -63,8 +62,8 @@ def run(rank, n_gpus, hps):
     torch.cuda.set_device(rank)
 
     train_dataset = TextAudioSpeakerLoader(hps.data.training_files, hps)
-    train_loader = DataLoader(train_dataset, num_workers=8, shuffle=False, pin_memory=True,
-                              batch_size=hps.train.batch_size)
+    train_loader = DataLoader(train_dataset, num_workers=extra["num_workers"], shuffle=False, pin_memory=True,
+                              batch_size=extra["batch_size"]) # hps.train.batch_size
     if rank == 0:
         eval_dataset = EvalDataLoader(hps.data.validation_files, hps)
         eval_loader = DataLoader(eval_dataset, num_workers=1, shuffle=False,
