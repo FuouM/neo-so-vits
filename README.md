@@ -11,10 +11,12 @@ conda install pytorch torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvi
 
 pip install -r requirements.txt
 ```
-
+### Inference (Use G models)
 ```
 python .\inference_main.py --model "\models\kita\G_60000.pth" --config "\models\kita\config.json" --input "\raw\test2.wav" --hubert "\hubert\hubert-soft-0d54a1f4.pt"
 ```
+
+### Training
 
 ```
 python .\resample.py --in_dir "\dataset_raw" --out_dir2 "\dataset_raw\32"
