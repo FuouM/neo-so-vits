@@ -72,6 +72,8 @@ def main():
     hubert_path = args.hubert_path
     input_path = args.input_path
     
+    if not os.path.isdir("./results"):
+        os.mkdir("./results")
     
     input_files = list()
     
@@ -114,7 +116,7 @@ def main():
                     out_audio, out_sr = svc_model.infer(speaker, tranpose, raw_path)
                     _audio = out_audio.cpu().numpy()
                 audio.extend(list(_audio))
-                
+            
             res_path = f'./results/{input_file}_{tranpose}key_{speaker}.{wav_format}'
             soundfile.write(res_path, audio, svc_model.target_sample, format=wav_format)
             print(f"File saved at {res_path}")
