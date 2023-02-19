@@ -13,7 +13,7 @@ pip install -r requirements.txt
 ```
 
 ```
-python .\inference_main.py --model "\models\kita\D_60000.pth" --config "\models\kita\config.json" --input "\raw\test2.wav" --hubert "\hubert\hubert-soft-0d54a1f4.pt"
+python .\inference_main.py --model "\models\kita\G_60000.pth" --config "\models\kita\config.json" --input "\raw\test2.wav" --hubert "\hubert\hubert-soft-0d54a1f4.pt"
 ```
 
 ```
